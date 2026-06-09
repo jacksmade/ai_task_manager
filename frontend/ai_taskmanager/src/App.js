@@ -11,7 +11,7 @@ function App() {
 
   const fetchTasks = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/tasks');
+      const res = await fetch('https://aitaskmanager-production-a46e.up.railway.app/api/tasks');
       const data = await res.json();
       setTasks(data);
       setLoading(false);
@@ -25,7 +25,7 @@ function App() {
     setPrioritizing(true);
     setPrioritized(false);
     try {
-      const res = await fetch('http://localhost:5000/api/tasks/prioritize', {
+      const res = await fetch('https://aitaskmanager-production-a46e.up.railway.app/api/tasks/prioritize', {
         method: 'POST'
       });
       const data = await res.json();

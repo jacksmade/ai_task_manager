@@ -10,7 +10,7 @@ function TaskForm({ fetchTasks }) {
     if (!title) return;
     setLoading(true);
     try {
-      await fetch('http://localhost:5000/api/tasks', {
+      await fetch('https://aitaskmanager-production-a46e.up.railway.app/api/tasks', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title, description, deadline })

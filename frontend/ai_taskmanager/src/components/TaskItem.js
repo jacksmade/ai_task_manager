@@ -14,14 +14,14 @@ const effortColors = {
 
 function TaskItem({ task, fetchTasks }) {
   const handleDelete = async () => {
-    await fetch(`http://localhost:5000/api/tasks/${task._id}`, {
+    await fetch(`https://aitaskmanager-production-a46e.up.railway.app/api/tasks/${task._id}`, {
       method: 'DELETE'
     });
     fetchTasks();
   };
 
   const handleToggle = async () => {
-    await fetch(`http://localhost:5000/api/tasks/${task._id}/toggle`, {
+    await fetch(`https://aitaskmanager-production-a46e.up.railway.app/api/tasks/${task._id}/toggle`, {
       method: 'PATCH'
     });
     fetchTasks();
