@@ -12,17 +12,21 @@ const effortColors = {
   'Low': '#4caf50'
 };
 
-function TaskItem({ task, fetchTasks }) {
+const API = process.env.REACT_APP_API;
+
+function TaskItem({ task, fetchTasks, token }) {
   const handleDelete = async () => {
-    await fetch(`https://aitaskmanager-production-a46e.up.railway.app/api/tasks/${task._id}`, {
-      method: 'DELETE'
+    await fetch(`${API}/api/tasks/${task._id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` }
     });
     fetchTasks();
   };
 
   const handleToggle = async () => {
-    await fetch(`https://aitaskmanager-production-a46e.up.railway.app/api/tasks/${task._id}/toggle`, {
-      method: 'PATCH'
+    await fetch(`${API}/api/tasks/${task._id}/toggle`, {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${token}` }
     });
     fetchTasks();
   };

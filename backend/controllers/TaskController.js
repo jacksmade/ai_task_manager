@@ -1,12 +1,15 @@
 const Task = require('../models/Task');
 const Groq = require('groq-sdk');
-
+const auth = require('../middleware/auth');
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 // Get all tasks
 exports.getTasks = async (req, res) => {
   try {
-    const tasks = await Task.find().sort({ priorityRank: 1, createdAt: -1 });
+    console.log('👤 Fetching tasks for user:', req.userId);
+    const tasks = await Task.find({ user: req.userId })
+      .sort({ priorityRank: 1, createdAt: -1 });
+    console.log('📋 Tasks found:', tasks.length);
     res.json(tasks);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -17,12 +20,61 @@ exports.getTasks = async (req, res) => {
 exports.createTask = async (req, res) => {
   try {
     const { title, description, deadline } = req.body;
-    console.log('📥 Creating task:', title);
-    const task = await Task.create({ title, description, deadline });
-    console.log('✅ Task created');
+
+    if (!title || title.trim().length < 3) {
+      return res.status(400).json({ 
+        message: 'Please add a proper task title (at least 3 characters)' 
+      });
+    }
+
+    console.log('📥 Validating task with AI:', title);
+
+    const validationResponse = await groq.chat.completions.create({
+      messages: [
+        {
+          role: 'user',
+          content: `Is this a meaningful real task that a person would actually do?
+Title: "${title}"
+Description: "${description || 'none'}"
+
+Reply with ONLY a JSON object like this:
+{
+  "isValid": true or false,
+  "reason": "why it is or isn't valid in one sentence"
+}
+
+A task is NOT valid if:
+- Title is random letters like "xyz", "abc", "asdfgh"
+- Title is gibberish or meaningless
+
+A task IS valid if:
+- It describes a real activity like "clean room", "finish assignment", "buy groceries"`
+        }
+      ],
+      model: 'llama-3.3-70b-versatile'
+    });
+
+    const rawValidation = validationResponse.choices[0].message.content;
+    const validation = JSON.parse(rawValidation);
+
+    if (!validation.isValid) {
+      return res.status(400).json({
+        message: `"${title}" doesn't look like a real task. Please add a meaningful task title.`
+      });
+    }
+
+    const task = await Task.create({ 
+      title, 
+      description, 
+      deadline,
+      user: req.userId
+    });
+
+    console.log('Task created for user:', req.userId);
     res.status(201).json(task);
+
   } catch (err) {
-    console.log('❌ Error:', err.message);
+    console.log('Error:', err.message);
     res.status(500).json({ message: err.message });
   }
 };
@@ -52,8 +104,10 @@ exports.toggleTask = async (req, res) => {
 // AI Prioritize ALL tasks
 exports.prioritizeTasks = async (req, res) => {
   try {
-    const tasks = await Task.find({ completed: false });
-
+    const tasks = await Task.find({ 
+  completed: false,
+  user: req.userId 
+});
     if (tasks.length === 0) {
       return res.status(400).json({ message: 'No tasks to prioritize' });
     }
@@ -99,7 +153,7 @@ Rules:
 - Return ONLY the JSON array, no other text
 `;
 
-    console.log('🤖 Asking AI to prioritize...');
+    console.log('Asking AI to prioritize...');
 
     const aiResponse = await groq.chat.completions.create({
       messages: [{ role: 'user', content: prompt }],
@@ -123,11 +177,10 @@ Rules:
     }
 
     // Return updated tasks
-    const updatedTasks = await Task.find().sort({ priorityRank: 1, createdAt: -1 });
+    const updatedTasks = await Task.find({ user: req.userId }).sort({ priorityRank: 1, createdAt: -1 });
     res.json(updatedTasks);
-
   } catch (err) {
-    console.log('❌ Prioritize error:', err.message);
+    console.log('Prioritize error:', err.message);
     res.status(500).json({ message: err.message });
   }
 };

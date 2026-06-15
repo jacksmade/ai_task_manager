@@ -1,7 +1,7 @@
 import React from 'react';
 import TaskItem from './TaskItem';
 
-function TaskList({ tasks, fetchTasks, title }) {
+function TaskList({ tasks, fetchTasks, title, token }) {
   if (tasks.length === 0) return null;
 
   return (
@@ -9,7 +9,7 @@ function TaskList({ tasks, fetchTasks, title }) {
       <h2 className="section-title">{title}</h2>
       <div className="task-list">
         {tasks.map(task => (
-          <TaskItem key={task._id} task={task} fetchTasks={fetchTasks} />
+          <TaskItem key={task._id} task={task} fetchTasks={fetchTasks} token={token} />
         ))}
       </div>
     </div>

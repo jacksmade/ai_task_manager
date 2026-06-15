@@ -235,3 +235,96 @@ h1 {
   color: #aaa;
   margin-top: 40px;
 }
+.auth-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0f0f1a;
+}
+
+.auth-box {
+  background: #1a1a2e;
+  border: 1px solid #333;
+  border-radius: 16px;
+  padding: 40px;
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.auth-box h1 {
+  font-size: 1.8rem;
+  text-align: center;
+}
+
+.auth-box h2 {
+  text-align: center;
+  color: #aaa;
+  font-size: 1.1rem;
+  font-weight: normal;
+}
+
+.auth-box input {
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background: #0f0f1a;
+  color: white;
+  font-size: 1rem;
+}
+
+.auth-box button {
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.switch-text {
+  text-align: center;
+  color: #aaa;
+  font-size: 0.9rem;
+}
+
+.switch-text span {
+  color: #667eea;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #aaa;
+  font-size: 0.9rem;
+}
+
+.logout-btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background: transparent;
+  color: #aaa;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.logout-btn:hover {
+  border-color: #ff4444;
+  color: #ff4444;
+}

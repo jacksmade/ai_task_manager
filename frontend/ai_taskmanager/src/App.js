@@ -1,17 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import TaskForm from './components/TaskForm';
 import TaskList from './components/TaskList';
+import Login from './components/Login';
+import Signup from './components/Signup';
+import { useAuth } from './context/AuthContext';
 import './App.css';
 
+const API = process.env.REACT_APP_API;
+
 function App() {
+  const { token, user, logout } = useAuth();
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [prioritizing, setPrioritizing] = useState(false);
   const [prioritized, setPrioritized] = useState(false);
+  const [showLogin, setShowLogin] = useState(true);
 
   const fetchTasks = async () => {
     try {
-      const res = await fetch('https://aitaskmanager-production-a46e.up.railway.app/api/tasks');
+      const res = await fetch(`${API}/api/tasks`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       const data = await res.json();
       setTasks(data);
       setLoading(false);
@@ -25,11 +34,22 @@ function App() {
     setPrioritizing(true);
     setPrioritized(false);
     try {
-      const res = await fetch('https://aitaskmanager-production-a46e.up.railway.app/api/tasks/prioritize', {
-        method: 'POST'
+      const res = await fetch(`${API}/api/tasks/prioritize`, {
+        method: 'POST',
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       });
-      const data = await res.json();
-      setTasks(data);
+
+      if (!res.ok) {
+        const data = await res.json();
+        console.log('Error:', data.message);
+        setPrioritizing(false);
+        return;
+      }
+
+      await fetchTasks();
       setPrioritized(true);
     } catch (err) {
       console.log('Prioritize error:', err);
@@ -38,27 +58,41 @@ function App() {
   };
 
   useEffect(() => {
-    fetchTasks();
-  }, []);
+    if (token) fetchTasks();
+  }, [token]);
 
   const incompleteTasks = tasks
-  .filter(t => !t.completed)
-  .sort((a, b) => {
-    if (a.priorityRank && b.priorityRank) return a.priorityRank - b.priorityRank;
-    if (a.priorityRank) return -1;
-    if (b.priorityRank) return 1;
-    return 0;
-  });
+    .filter(t => !t.completed)
+    .sort((a, b) => {
+      if (a.priorityRank && b.priorityRank) return a.priorityRank - b.priorityRank;
+      if (a.priorityRank) return -1;
+      if (b.priorityRank) return 1;
+      return 0;
+    });
+
   const completedTasks = tasks.filter(t => t.completed);
+
+  if (!token) {
+    return showLogin
+      ? <Login onSwitch={() => setShowLogin(false)} />
+      : <Signup onSwitch={() => setShowLogin(true)} />;
+  }
 
   return (
     <div className="app">
-      <h1>🧠 AI Task Manager</h1>
+      <div className="app-header">
+        <h1>AI Task Manager</h1>
+        <div className="user-info">
+          <span> {user?.name}</span>
+          <button onClick={logout} className="logout-btn">Logout</button>
+        </div>
+      </div>
+
       <p className="subtitle">Add your tasks, then let AI prioritize them for you</p>
 
-      <TaskForm fetchTasks={fetchTasks} />
+      <TaskForm fetchTasks={fetchTasks} token={token} />
 
-      {incompleteTasks.length >= 2 && (
+      {tasks.filter(t => !t.completed).length >= 2 && (
         <button
           className="prioritize-btn"
           onClick={handlePrioritize}
@@ -70,7 +104,7 @@ function App() {
 
       {prioritized && (
         <div className="prioritized-banner">
-          ✅ AI has ranked your tasks! Start from Task #1.
+           AI has ranked your tasks! Start from Task #1.
         </div>
       )}
 
@@ -79,21 +113,11 @@ function App() {
       ) : (
         <>
           {incompleteTasks.length === 0 && completedTasks.length === 0 && (
-            <p className="no-tasks">No tasks yet! Add some above ☝️</p>
+            <p className="no-tasks">No tasks yet! Add some above </p>
           )}
-
-          <TaskList
-            tasks={incompleteTasks}
-            fetchTasks={fetchTasks}
-            title="📋 My Tasks"
-          />
-
+          <TaskList tasks={incompleteTasks} fetchTasks={fetchTasks} token={token} title="My Tasks" />
           {completedTasks.length > 0 && (
-            <TaskList
-              tasks={completedTasks}
-              fetchTasks={fetchTasks}
-              title="✅ Completed"
-            />
+            <TaskList tasks={completedTasks} fetchTasks={fetchTasks} token={token} title=" Completed" />
           )}
         </>
       )}

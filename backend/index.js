@@ -4,27 +4,31 @@ const cors = require('cors');
 require('dotenv').config();
 
 const taskRoutes = require('./routes/taskRoutes');
+const authRoutes = require('./routes/authRoutes');
 
 const app = express();
 
 // Middlewares
 app.use(cors({
-  origin:[ 'http://localhost:3000',
-  'https://ai-task-manager-ten-lovat.vercel.app']
+  origin: [
+    'http://localhost:3000',
+    'https://ai-task-manager-ten-lovat.vercel.app'
+  ]
 }));
 app.use(express.json());
 
 // Routes
 app.use('/api/tasks', taskRoutes);
+app.use('/api/auth', authRoutes);
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
-    console.log('✅ MongoDB Connected!');
+    console.log('MongoDB Connected!');
     app.listen(process.env.PORT, () => {
-      console.log(`✅ Server running on port ${process.env.PORT}`);
+      console.log(`Server running on port ${process.env.PORT}`);
     });
   })
   .catch((err) => {
-    console.log('❌ Connection failed:', err.message);
+    console.log(' Connection failed:', err.message);
   });
