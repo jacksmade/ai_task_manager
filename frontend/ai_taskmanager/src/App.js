@@ -71,6 +71,7 @@ function App() {
 
   useEffect(() => {
     if (token) fetchTasks();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
   const incompleteTasks = tasks
