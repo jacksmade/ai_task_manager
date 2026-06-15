@@ -16,19 +16,31 @@ function App() {
   const [prioritized, setPrioritized] = useState(false);
   const [showLogin, setShowLogin] = useState(true);
 
-  const fetchTasks = async () => {
-    try {
-      const res = await fetch(`${API}/api/tasks`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-      setTasks(data);
+  const fetchTasks = async (currentToken) => {
+  const useToken = currentToken || token;
+  try {
+    const res = await fetch(`${API}/api/tasks`, {
+      headers: { Authorization: `Bearer ${useToken}` }
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      console.log('Fetch error:', data.message);
+      setTasks([]);
       setLoading(false);
-    } catch (err) {
-      console.log('Fetch error:', err);
-      setLoading(false);
+      return;
     }
-  };
+
+    // Make sure data is array before setting
+    setTasks(Array.isArray(data) ? data : []);
+    setLoading(false);
+  } catch (err) {
+    console.log('Fetch error:', err);
+    setTasks([]);
+    setLoading(false);
+  }
+};
 
   const handlePrioritize = async () => {
     setPrioritizing(true);
